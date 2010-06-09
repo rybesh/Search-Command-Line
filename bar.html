@@ -9,15 +9,39 @@
         scl.addEventListener('keypress', function(e) {
           switch (e.keyCode) {
             case 13: // enter
-              exec(this.value);
+              exec(this.value.trim());
               break;
           }
         }, false);
       }
+      function complete(fragment) {
+        var matches = [];
+        for (var key in localStorage) {
+          if (key.indexOf(fragment) == 0) {
+            matches.push(key);
+          }
+        }
+        if (matches.length == 0) { return null; }
+        if (matches.length == 1) { 
+          return matches[0].slice(fragment.length) + ' '; 
+        }
+        matches.sort();
+        var completion = matches[0];
+        var key2 = matches.pop();
+        var index = completion.length;
+        while (index && key2.indexOf(completion) < 0) {
+          completion = completion.substring(0, --s);
+        }
+        return completion;
+      }
       function exec(input) {
         if (! input) { return; }
         var parts = input.split(' ');
-        if (parts.length < 2) { return; }
+        if (parts.length < 2) { 
+          var scl = document.getElementById('searchcommandline');
+          scl.value += complete(parts[0]);
+          return; 
+        }
         switch (parts[0]) {
           case 'set':
             set(parts.slice(1));
