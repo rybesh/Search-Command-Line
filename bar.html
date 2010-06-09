@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>Search Command Line</title>
+    <link rel="stylesheet" href="bar.css" type="text/css" media="screen"/>
+    <script type="text/javascript">
+      function init() {
+        var scl = document.getElementById('searchcommandline');
+        scl.addEventListener('keypress', function(e) {
+          switch (e.keyCode) {
+            case 13: // enter
+              exec(this.value);
+              break;
+          }
+        }, false);
+      }
+      function exec(input) {
+        if (! input) { return; }
+        var parts = input.split(' ');
+        if (parts.length < 2) { return; }
+        switch (parts[0]) {
+          case 'set':
+            set(parts.slice(1));
+            break;
+          default:
+            var template = localStorage.getItem(parts[0]);
+            if (! template) { return; }
+            var tab = safari.self.browserWindow.openTab();
+            tab.url = template.replace(/#q#/, encode(parts.slice(1).join(' ')));
+            break;
+        }
+      }
+      function set(args) {
+        if (args.length != 2) { 
+          show('Usage: set keyword uri_template');
+          return; 
+        }
+        if (! args[1].match(/#q#/)) {
+          show("URI template must contain '#q#'");
+          return;
+        }
+        localStorage.setItem(args[0], args[1]);
+        show('');
+      }
+      function encode(str) {
+        return encodeURIComponent(str).replace(
+          /%20/g, '+'  ).replace(
+          /!/g,   '%21').replace(
+          /'/g,   '%27').replace(
+          /\(/g,  '%28').replace(
+          /\)/g,  '%29').replace(
+          /\*/g,  '%2A');
+      }
+      function show(msg) {
+        var scl = document.getElementById('searchcommandline');
+        scl.value = msg;
+        scl.focus();
+        scl.select();
+      }
+    </script>
+  </head>
+  <body onload="init();">
+    <input id="searchcommandline" name="q" placeholder="Search Command Line"/>
+  </body>
+</html>
